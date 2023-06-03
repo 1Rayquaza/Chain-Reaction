@@ -1,0 +1,53 @@
+html,
+body {
+	margin: 0;
+	padding: 0;
+	background-color: #333333;
+}
+.container {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;
+}
+
+.turnIndicator{
+	background-color: #BBBBBB;
+	width: 414px;
+	text-align: center;
+	padding: 5px;
+	visibility: hidden;
+	font-size: 40px;
+	font-weight: bold;
+	font-family: 'Montserrat';
+	color: red;
+}
+canvas {
+	background-color: black;
+	display: block;
+	border-width: 2px;
+	border-style: solid;
+	border-color: grey;
+}
+.undo {
+	background-color: #3c213c;
+	color: white;
+	display: inline-block;
+	margin-top: 10px;
+	font-weight: bold;
+	padding-left: 20px;
+	padding-right: 20px;
+	cursor: pointer;
+	font-family: 'Montserrat';
+	font-size: 16px;
+	border-radius: 15px;
+}
+
+.undoMessage {
+	color: white;
+	margin-top: 10px;
+	font-size: 20px;
+	font-weight: bold;
+	font-family: 'Montserrat';
+}
