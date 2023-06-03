@@ -36,7 +36,7 @@ function findElements(){
 }
 
 function initialise(){
-	document.getElementById("undo").style.visibility = "visible";
+	button.style.visibility = "visible";
 	turnIndicator.style.visibility = "visible";
 	isGameOver = false;
 	initialiseMatrix();
@@ -91,6 +91,67 @@ function drawLine(x1, y1, x2, y2){
 	gameArena.stroke();
 }
 
+function oneCircle(row, column, color){
+	var strokeColor;
+	if((row == 0 && column == 0) || (row == 8 && column == 0) || (row == 0 && column == 5) || (row == 8 && column == 5)){
+		if(counterAnimate%2 == 0)
+			strokeColor = "black";
+		else
+			strokeColor = color;
+	}
+	else{
+		strokeColor = "black";
+	}
+
+	drawCircle(column*gapWidth + 35, row*gapHeight + 35, color, strokeColor);
+}
+
+function twoCircle(row, column, color){
+	var strokeColor;
+
+	if(((row >= 1 && row < 8) && (column == 0 || column == 5)) || ((row == 0 || row == 8) && (column >= 1 && column < 5))){
+		if(counterAnimate%2 == 0)
+			strokeColor = "black";
+		else
+			strokeColor = color;
+	}
+	else{
+		strokeColor = "black";
+	}
+
+	drawCircle(column*gapWidth + 20, row*gapHeight + 35, color, strokeColor);
+
+	drawCircle(column*gapWidth + 50, row*gapHeight + 35, color, strokeColor);
+}
+
+function threeCircle(row, column, color){
+	var strokeColor;
+	if(counterAnimate%2 == 0)
+		strokeColor = "black";
+	else
+		strokeColor = color;
+
+	drawCircle(column*gapWidth + 20, row*gapHeight + 17, color, strokeColor);
+
+	drawCircle(column*gapWidth + 20, row*gapHeight + 53, color, strokeColor);
+
+	drawCircle(column*gapWidth + 50, row*gapHeight + 35, color, strokeColor);
+}
+
+function drawCircle(i , j, color, strokeColor){
+	gameArena.beginPath();
+	gameArena.arc(i, j, 15, 0, Math.PI*2);
+	gameArena.fillStyle = color;
+	gameArena.fill();
+
+	gameArena.strokeStyle = strokeColor;
+
+	gameArena.lineWidth = 3;
+	gameArena.stroke();
+	gameArena.closePath();
+	gameArena.lineWidth = 1;
+}
+
 function undoGame(){
 	if(turnCount > 0 && flag == false){
 		flag = true;
@@ -118,19 +179,19 @@ function takeBackUp(){
 
 function gameLoop(event){
 	var rect = canvas.getBoundingClientRect();
-	var x = event.clientX - rect.left;
+	var x = event.clientX - rect.left;  // where did we click(at what distance)
 	var y = event.clientY - rect.top;
 
 	var row = Math.floor(x/gapWidth);
 	var column = Math.floor(y/gapHeight);
 
 	if(!isGameOver){
-		takeBackUp();
+		takeBackUp();   
 		if(turnCount%2 == 0 && (colorMatrix[column][row] == "" || colorMatrix[column][row] == "red")){
 			countMatrix[column][row]++;		
 			colorMatrix[column][row] = "red";
-			turnCount++;
-			flag = false;
+			turnCount++;    // other player turn
+			flag = false;   // now we can undo
 		}
 		if(turnCount%2 == 1 && (colorMatrix[column][row] == "" || colorMatrix[column][row] == "green")){
 			countMatrix[column][row]++;		
@@ -178,12 +239,33 @@ function populateSideWCells(i, j) {  // W = Width
 	sound.play();
 }
 
+function notStable(){
+	var ans = false;
+	if(countMatrix[0][0] >= 2 || countMatrix[8][0] >= 2 || countMatrix[8][5] >= 2 || countMatrix[0][5] >= 2)
+		ans = true;
+
+	for(var i = 1; i < 8; i++)
+		if(countMatrix[i][0] >= 3 || countMatrix[i][5] >= 3)
+			ans = true;
+
+	for(var i = 1; i < 5; i++)
+		if(countMatrix[0][i] >= 3 || countMatrix[8][i] >= 3)
+			ans = true;
+
+	for(var i = 1; i < 8; i++)
+		for(var j = 1; j < 8; j++)
+			if(countMatrix[i][j] >= 4)
+				ans = true;
+
+	return ans;
+}
+
 function updateMatrix(){
 	counterAnimate++;
 	drawArena();
 	var cornerCord = [[0,0], [8,0], [8,5], [0,5]];
 
-	while(notStable()){
+	if(notStable()){
 		for(var i = 0; i < 4;i++)
 			if(countMatrix[cornerCord[i][0]][cornerCord[i][1]] >= 2){ populateCornerCells(cornerCord[i][0], cornerCord[i][1]); break; }
 
@@ -220,7 +302,6 @@ function updateMatrix(){
 				}
 			}
 		}
-		break;
 	}
 	checkGameOver();
 }
@@ -235,29 +316,6 @@ function checkGameOver(){
 		clearInterval(gameTimer);
 		setTimeout(initialise, 6000);
 	}
-}
-
-
-
-function notStable(){
-	var ans = false;
-	if(countMatrix[0][0] >= 2 || countMatrix[8][0] >= 2 || countMatrix[8][5] >= 2 || countMatrix[0][5] >= 2)
-		ans = true;
-
-	for(var i = 1; i < 8; i++)
-		if(countMatrix[i][0] >= 3 || countMatrix[i][5] >= 3)
-			ans = true;
-
-	for(var i = 1; i < 5; i++)
-		if(countMatrix[0][i] >= 3 || countMatrix[8][i] >= 3)
-			ans = true;
-
-	for(var i = 1; i < 8; i++)
-		for(var j = 1; j < 8; j++)
-			if(countMatrix[i][j] >= 4)
-				ans = true;
-
-	return ans;
 }
 
 function gameOver(){
@@ -299,64 +357,3 @@ function showWinner(winnerTxt){
 	gameArena.fillText(winnerTxt, width/2 - 135, height/2 - 30);
 
 } 
-
-function drawCircle(i , j, color, strokeColor){
-	gameArena.beginPath();
-	gameArena.arc(i, j, 15, 0, Math.PI*2);
-	gameArena.fillStyle = color;
-	gameArena.fill();
-
-	gameArena.strokeStyle = strokeColor;
-
-	gameArena.lineWidth = 3;
-	gameArena.stroke();
-	gameArena.closePath();
-	gameArena.lineWidth = 1;
-}
-
-function oneCircle(row, column, color){
-	var strokeColor;
-	if((row == 0 && column == 0) || (row == 8 && column == 0) || (row == 0 && column == 5) || (row == 8 && column == 5)){
-		if(counterAnimate%2 == 0)
-			strokeColor = "black";
-		else
-			strokeColor = color;
-	}
-	else{
-		strokeColor = "black";
-	}
-
-	drawCircle(column*gapWidth + 35, row*gapHeight + 35, color, strokeColor);
-}
-
-function twoCircle(row, column, color){
-	var strokeColor;
-
-	if(((row >= 1 && row < 8) && (column == 0 || column == 5)) || ((row == 0 || row == 8) && (column >= 1 && column < 5))){
-		if(counterAnimate%2 == 0)
-			strokeColor = "black";
-		else
-			strokeColor = color;
-	}
-	else{
-		strokeColor = "black";
-	}
-
-	drawCircle(column*gapWidth + 20, row*gapHeight + 35, color, strokeColor);
-
-	drawCircle(column*gapWidth + 50, row*gapHeight + 35, color, strokeColor);
-}
-
-function threeCircle(row, column, color){
-	var strokeColor;
-	if(counterAnimate%2 == 0)
-		strokeColor = "black";
-	else
-		strokeColor = color;
-
-	drawCircle(column*gapWidth + 20, row*gapHeight + 17, color, strokeColor);
-
-	drawCircle(column*gapWidth + 20, row*gapHeight + 53, color, strokeColor);
-
-	drawCircle(column*gapWidth + 50, row*gapHeight + 35, color, strokeColor);
-}
